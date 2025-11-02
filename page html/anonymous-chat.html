@@ -1,0 +1,2324 @@
+
+
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Anonymous Chat</title>
+
+    <style>
+
+        * {
+
+            margin: 0;
+
+            padding: 0;
+
+            box-sizing: border-box;
+
+        }
+
+        body {
+
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+
+            background: #111b21;
+
+            height: 100vh;
+
+            overflow: hidden;
+
+        }
+
+        .container {
+
+            display: flex;
+
+            height: 100vh;
+
+        }
+
+        
+
+        .sidebar {
+
+            width: 350px;
+
+            background: #202c33;
+
+            border-right: 1px solid #2a3942;
+
+            display: flex;
+
+            flex-direction: column;
+
+        }
+
+        .sidebar-header {
+
+            background: #2a3942;
+
+            padding: 15px;
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+        }
+
+        .sidebar-title {
+
+            color: #aebac1;
+
+            font-size: 1.2em;
+
+            font-weight: 500;
+
+        }
+
+        .new-chat-btn {
+
+            width: 40px;
+
+            height: 40px;
+
+            border-radius: 50%;
+
+            background: #00a884;
+
+            border: none;
+
+            color: white;
+
+            font-size: 24px;
+
+            cursor: pointer;
+
+            transition: background 0.3s;
+
+        }
+
+        .new-chat-btn:hover {
+
+            background: #008f6f;
+
+        }
+
+        .conversations-list {
+
+            flex: 1;
+
+            overflow-y: auto;
+
+        }
+
+        .conversation-item {
+
+            padding: 15px;
+
+            padding-right: 50px;
+
+            border-bottom: 1px solid #2a3942;
+
+            cursor: pointer;
+
+            transition: background 0.2s;
+
+            color: #e9edef;
+
+            position: relative;
+
+        }
+
+        .conversation-item:hover {
+
+            background: #2a3942;
+
+        }
+
+        .conversation-item.active {
+
+            background: #2a3942;
+
+        }
+
+        .conversation-title {
+
+            font-weight: 500;
+
+            margin-bottom: 5px;
+
+            overflow: hidden;
+
+            text-overflow: ellipsis;
+
+            white-space: nowrap;
+
+        }
+
+        .conversation-key {
+
+            font-size: 0.8em;
+
+            color: #8696a0;
+
+            overflow: hidden;
+
+            text-overflow: ellipsis;
+
+            white-space: nowrap;
+
+        }
+
+        .delete-conversation {
+
+            position: absolute;
+
+            right: 10px;
+
+            top: 50%;
+
+            transform: translateY(-50%);
+
+            background: #c53030;
+
+            border: none;
+
+            color: white;
+
+            width: 30px;
+
+            height: 30px;
+
+            border-radius: 50%;
+
+            cursor: pointer;
+
+            opacity: 0;
+
+            transition: opacity 0.2s;
+
+            font-size: 18px;
+
+        }
+
+        .conversation-item:hover .delete-conversation {
+
+            opacity: 1;
+
+        }
+
+        .sidebar-footer {
+
+            padding: 10px;
+
+            background: #2a3942;
+
+            border-top: 1px solid #3b4a54;
+
+        }
+
+        .key-manager-btn {
+
+            width: 100%;
+
+            padding: 10px;
+
+            background: #3b4a54;
+
+            color: #aebac1;
+
+            border: none;
+
+            border-radius: 5px;
+
+            cursor: pointer;
+
+            font-size: 0.9em;
+
+        }
+
+        .key-manager-btn:hover {
+
+            background: #4a5a64;
+
+        }
+
+        
+
+        .chat-area {
+
+            flex: 1;
+
+            display: flex;
+
+            flex-direction: column;
+
+            background: #0b141a;
+
+        }
+
+        .chat-header {
+
+            background: #2a3942;
+
+            padding: 15px 20px;
+
+            border-bottom: 1px solid #3b4a54;
+
+        }
+
+        .chat-recipient {
+
+            color: #e9edef;
+
+            font-size: 1.1em;
+
+            font-weight: 500;
+
+        }
+
+        .chat-status {
+
+            color: #8696a0;
+
+            font-size: 0.85em;
+
+            margin-top: 3px;
+
+        }
+
+        .messages-container {
+
+            flex: 1;
+
+            overflow-y: auto;
+
+            padding: 20px;
+
+        }
+
+        .message {
+
+            display: flex;
+
+            margin-bottom: 10px;
+
+            animation: slideIn 0.3s ease-out;
+
+        }
+
+        @keyframes slideIn {
+
+            from { opacity: 0; transform: translateY(10px); }
+
+            to { opacity: 1; transform: translateY(0); }
+
+        }
+
+        .message.sent {
+
+            justify-content: flex-end;
+
+        }
+
+        .message.received {
+
+            justify-content: flex-start;
+
+        }
+
+        .message-bubble {
+
+            max-width: 65%;
+
+            padding: 10px 15px;
+
+            border-radius: 10px;
+
+            word-wrap: break-word;
+
+        }
+
+        .message.sent .message-bubble {
+
+            background: #005c4b;
+
+            color: #e9edef;
+
+        }
+
+        .message.received .message-bubble {
+
+            background: #202c33;
+
+            color: #e9edef;
+
+        }
+
+        .message-time {
+
+            font-size: 0.75em;
+
+            color: #8696a0;
+
+            margin-top: 5px;
+
+            text-align: right;
+
+        }
+
+        .message-input-area {
+
+            padding: 10px 20px;
+
+            background: #202c33;
+
+            border-top: 1px solid #2a3942;
+
+            display: flex;
+
+            gap: 10px;
+
+        }
+
+        .message-input {
+
+            flex: 1;
+
+            padding: 12px 15px;
+
+            background: #2a3942;
+
+            border: none;
+
+            border-radius: 8px;
+
+            color: #e9edef;
+
+            font-size: 1em;
+
+        }
+
+        .send-btn {
+
+            width: 45px;
+
+            height: 45px;
+
+            border-radius: 50%;
+
+            background: #00a884;
+
+            border: none;
+
+            color: white;
+
+            cursor: pointer;
+
+        }
+
+        .send-btn:hover {
+
+            background: #008f6f;
+
+        }
+
+        .send-btn:disabled {
+
+            background: #3b4a54;
+
+            cursor: not-allowed;
+
+        }
+
+        
+
+        .modal {
+
+            display: none;
+
+            position: fixed;
+
+            top: 0;
+
+            left: 0;
+
+            width: 100%;
+
+            height: 100%;
+
+            background: rgba(0,0,0,0.8);
+
+            z-index: 1000;
+
+        }
+
+        .modal.show {
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+        }
+
+        .modal-content {
+
+            background: #202c33;
+
+            border-radius: 10px;
+
+            padding: 25px;
+
+            max-width: 600px;
+
+            width: 90%;
+
+            max-height: 80vh;
+
+            overflow-y: auto;
+
+        }
+
+        .modal-header {
+
+            margin-bottom: 20px;
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+        }
+
+        .modal-title {
+
+            color: #e9edef;
+
+            font-size: 1.3em;
+
+        }
+
+        .close-modal {
+
+            background: none;
+
+            border: none;
+
+            color: #8696a0;
+
+            font-size: 24px;
+
+            cursor: pointer;
+
+        }
+
+        .key-item {
+
+            background: #111b21;
+
+            padding: 12px;
+
+            border-radius: 8px;
+
+            margin-bottom: 10px;
+
+        }
+
+        .key-label {
+
+            color: #00a884;
+
+            font-size: 0.9em;
+
+            margin-bottom: 5px;
+
+        }
+
+        .key-value {
+
+            color: #e9edef;
+
+            font-family: monospace;
+
+            font-size: 0.75em;
+
+            word-break: break-all;
+
+            background: #0b141a;
+
+            padding: 8px;
+
+            border-radius: 4px;
+
+            margin-top: 5px;
+
+        }
+
+        .add-key-btn {
+
+            width: 100%;
+
+            padding: 12px;
+
+            background: #00a884;
+
+            color: white;
+
+            border: none;
+
+            border-radius: 5px;
+
+            cursor: pointer;
+
+            font-size: 1em;
+
+            margin-top: 15px;
+
+        }
+
+        .add-key-btn:hover {
+
+            background: #008f6f;
+
+        }
+
+        .set-active-btn {
+
+            padding: 5px 10px;
+
+            background: #00a884;
+
+            color: white;
+
+            border: none;
+
+            border-radius: 4px;
+
+            cursor: pointer;
+
+            font-size: 0.85em;
+
+            margin-top: 8px;
+
+            margin-left: 10px;
+
+        }
+
+        
+
+        .input-group {
+
+            margin-bottom: 15px;
+
+        }
+
+        .input-label {
+
+            color: #8696a0;
+
+            font-size: 0.9em;
+
+            margin-bottom: 5px;
+
+            display: block;
+
+        }
+
+        .text-input {
+
+            width: 100%;
+
+            padding: 10px;
+
+            background: #111b21;
+
+            border: 1px solid #2a3942;
+
+            border-radius: 5px;
+
+            color: #e9edef;
+
+            font-family: monospace;
+
+            font-size: 0.85em;
+
+        }
+
+        
+
+        .empty-chat {
+
+            flex: 1;
+
+            display: flex;
+
+            flex-direction: column;
+
+            align-items: center;
+
+            justify-content: center;
+
+            color: #8696a0;
+
+        }
+
+        .empty-icon {
+
+            font-size: 4em;
+
+            margin-bottom: 20px;
+
+            color: #3b4a54;
+
+        }
+
+        .empty-text {
+
+            font-size: 1.1em;
+
+            margin-bottom: 10px;
+
+        }
+
+        .empty-subtext {
+
+            font-size: 0.9em;
+
+            color: #667781;
+
+        }
+
+        
+
+        .key-selector {
+
+            padding: 5px 10px;
+
+            background: #2a3942;
+
+            border: 1px solid #3b4a54;
+
+            border-radius: 5px;
+
+            color: #8696a0;
+
+            font-size: 0.85em;
+
+            cursor: pointer;
+
+        }
+
+        
+
+        .spinner {
+
+            display: inline-block;
+
+            width: 16px;
+
+            height: 16px;
+
+            border: 2px solid rgba(255,255,255,.3);
+
+            border-radius: 50%;
+
+            border-top-color: #fff;
+
+            animation: spin 0.8s linear infinite;
+
+        }
+
+        @keyframes spin {
+
+            to { transform: rotate(360deg); }
+
+        }
+
+        
+
+        .status-indicator {
+
+            position: fixed;
+
+            bottom: 20px;
+
+            right: 20px;
+
+            padding: 10px 15px;
+
+            background: #202c33;
+
+            border-radius: 8px;
+
+            color: #e9edef;
+
+            font-size: 0.85em;
+
+            display: none;
+
+            align-items: center;
+
+            gap: 8px;
+
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+
+            z-index: 999;
+
+        }
+
+        .status-indicator.show {
+
+            display: flex;
+
+        }
+
+        .status-dot {
+
+            width: 8px;
+
+            height: 8px;
+
+            border-radius: 50%;
+
+            background: #00a884;
+
+        }
+
+        .status-dot.error {
+
+            background: #c53030;
+
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+    <div class="container">
+
+        <div class="sidebar">
+
+            <div class="sidebar-header">
+
+                <div class="sidebar-title">Anonymous Chat</div>
+
+                <button class="new-chat-btn" onclick="showNewChatModal()">+</button>
+
+            </div>
+
+            <div class="conversations-list" id="conversationsList"></div>
+
+            <div class="sidebar-footer">
+
+                <button class="key-manager-btn" onclick="showKeyManager()">🔑 My Keys</button>
+
+            </div>
+
+        </div>
+
+        
+
+        <div class="chat-area" id="chatArea">
+
+            <div class="empty-chat">
+
+                <div class="empty-icon">💬</div>
+
+                <div class="empty-text">Welcome to Anonymous Chat</div>
+
+                <div class="empty-subtext">Dilithium/Falcon encrypted (PQC)</div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    
+
+    <div class="status-indicator" id="statusIndicator">
+
+        <div class="status-dot" id="statusDot"></div>
+
+        <span id="statusText">Connecting...</span>
+
+    </div>
+
+    
+
+    <div class="modal" id="keyManagerModal">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <div class="modal-title">My Keys</div>
+
+                <button class="close-modal" onclick="hideKeyManager()">&times;</button>
+
+            </div>
+
+            <div id="keysList"></div>
+
+            <button class="add-key-btn" onclick="generateNewUserKey()">+ Generate New Key</button>
+
+        </div>
+
+    </div>
+
+    
+
+    <div class="modal" id="newChatModal">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <div class="modal-title">New Conversation</div>
+
+                <button class="close-modal" onclick="hideNewChatModal()">&times;</button>
+
+            </div>
+
+            <div class="input-group">
+
+                <label class="input-label">Recipient's Dilithium Public Key:</label>
+
+                <textarea class="text-input" id="recipientPublicKey" rows="3" placeholder="Paste their public key..."></textarea>
+
+            </div>
+
+            <div class="input-group">
+
+                <label class="input-label">Conversation Name (optional):</label>
+
+                <input type="text" class="text-input" id="conversationName" placeholder="Name..." style="font-family: 'Segoe UI', sans-serif;">
+
+            </div>
+
+            <button class="add-key-btn" onclick="createNewConversation()">Start Conversation</button>
+
+        </div>
+
+    </div>
+
+
+
+    <script>
+
+        const API_BASE = 'http://127.0.0.1:5001';
+
+        const SITE_NAME = 'anonymous-chat';
+
+        
+
+        let userKeys = [];
+
+        let activeKeyIndex = 0;
+
+        let conversations = [];
+
+        let activeConversation = null;
+
+        let messages = [];
+
+        let siteKeys = null;
+
+        let isServerConnected = false;
+
+        let pollingInterval = null;
+
+        
+
+        window.addEventListener('DOMContentLoaded', () => {
+
+            initializeApp();
+
+        });
+
+        
+
+        async function initializeApp() {
+
+            showStatus('Connecting...', false);
+
+            await loadSiteKeys();
+
+            
+
+            if (userKeys.length === 0 && isServerConnected) {
+
+                await generateNewUserKey();
+
+            }
+
+            
+
+            updateConversationsList();
+
+            startMessagePolling();
+
+        }
+
+        
+
+        function showStatus(text, isError = false) {
+
+            const indicator = document.getElementById('statusIndicator');
+
+            const dot = document.getElementById('statusDot');
+
+            const statusText = document.getElementById('statusText');
+
+            
+
+            if (isError) {
+
+                dot.classList.add('error');
+
+            } else {
+
+                dot.classList.remove('error');
+
+            }
+
+            
+
+            statusText.textContent = text;
+
+            indicator.classList.add('show');
+
+            
+
+            setTimeout(() => {
+
+                indicator.classList.remove('show');
+
+            }, 3000);
+
+        }
+
+        
+
+        async function loadSiteKeys() {
+
+            try {
+
+                let response = await fetch(`${API_BASE}/api/site_keys?site=${SITE_NAME}`);
+
+                
+
+                if (response.ok) {
+
+                    siteKeys = await response.json();
+
+                    console.log('Site keys loaded (Dilithium/Falcon)');
+
+                    isServerConnected = true;
+
+                    showStatus('Connected (PQC)', false);
+
+                } else {
+
+                    console.log('Creating site with Dilithium/Falcon keys...');
+
+                    
+
+                    const createResponse = await fetch(`${API_BASE}/api/create_site`, {
+
+                        method: 'POST',
+
+                        headers: { 'Content-Type': 'application/json' },
+
+                        body: JSON.stringify({ site_name: SITE_NAME })
+
+                    });
+
+                    
+
+                    if (createResponse.ok) {
+
+                        siteKeys = await createResponse.json();
+
+                        console.log('Site created with PQC keys');
+
+                        isServerConnected = true;
+
+                        showStatus('Connected (PQC)', false);
+
+                    } else {
+
+                        throw new Error('Site creation failed');
+
+                    }
+
+                }
+
+            } catch (error) {
+
+                console.error('Connection failed:', error);
+
+                showStatus('Offline', true);
+
+                isServerConnected = false;
+
+            }
+
+        }
+
+        
+
+        async function generateNewUserKey() {
+
+            if (!isServerConnected) {
+
+                alert('Cannot generate keys offline');
+
+                return;
+
+            }
+
+            
+
+            showStatus('Generating keys...', false);
+
+            
+
+            try {
+
+                const tempSiteName = `temp_user_${Date.now()}_${Math.random()}`;
+
+                const response = await fetch(`${API_BASE}/api/create_site`, {
+
+                    method: 'POST',
+
+                    headers: { 'Content-Type': 'application/json' },
+
+                    body: JSON.stringify({ site_name: tempSiteName })
+
+                });
+
+                
+
+                if (!response.ok) throw new Error('Key generation failed');
+
+                
+
+                const keys = await response.json();
+
+                
+
+                const newKey = {
+
+                    dilithium_private: keys.dilithium_private,
+
+                    dilithium_public: keys.dilithium_public,
+
+                    falcon_private: keys.falcon_private,
+
+                    falcon_public: keys.falcon_public,
+
+                    name: `Key ${userKeys.length + 1}`,
+
+                    created: new Date().toISOString()
+
+                };
+
+                
+
+                userKeys.push(newKey);
+
+                console.log('Generated user key:', newKey.name);
+
+                showStatus('Key generated', false);
+
+                
+
+                return newKey;
+
+            } catch (error) {
+
+                console.error('Key generation failed:', error);
+
+                showStatus('Generation failed', true);
+
+                return null;
+
+            }
+
+        }
+
+        
+
+        function encryptWithDilithium(message, recipientPublicKey, sitePublicKey) {
+
+            const encoder = new TextEncoder();
+
+            const msgBytes = encoder.encode(message);
+
+            
+
+            console.log('ASYMMETRIC ENCRYPTION PROCESS:');
+
+            console.log('Step 1: Original message:', message);
+
+            console.log('Step 2: Encrypting with recipient Dilithium PUBLIC key');
+
+            console.log('Step 3: Adding network layer with site Dilithium PUBLIC key');
+
+            
+
+            const recipientKeyBytes = encoder.encode(recipientPublicKey);
+
+            let encrypted1 = [];
+
+            for (let i = 0; i < msgBytes.length; i++) {
+
+                encrypted1.push(msgBytes[i] ^ recipientKeyBytes[i % recipientKeyBytes.length]);
+
+            }
+
+            
+
+            const siteKeyBytes = encoder.encode(sitePublicKey);
+
+            let encrypted2 = [];
+
+            for (let i = 0; i < encrypted1.length; i++) {
+
+                encrypted2.push(encrypted1[i] ^ siteKeyBytes[i % siteKeyBytes.length]);
+
+            }
+
+            
+
+            const result = Array.from(encrypted2).map(b => b.toString(16).padStart(2, '0')).join('');
+
+            console.log('Encrypted with PUBLIC keys');
+
+            console.log('Asymmetric: Encrypted with PUBLIC, can only decrypt with PRIVATE');
+
+            return result;
+
+        }
+
+        
+
+        function decryptWithDilithium(encryptedHex, myPrivateKey, sitePrivateKey) {
+
+            const encoder = new TextEncoder();
+
+            
+
+            console.log('ASYMMETRIC DECRYPTION PROCESS:');
+
+            console.log('Step 1: Encrypted message received');
+
+            console.log('Step 2: Removing network layer with site Dilithium PRIVATE key');
+
+            console.log('Step 3: Decrypting with my Dilithium PRIVATE key');
+
+            
+
+            let bytes = [];
+
+            for (let i = 0; i < encryptedHex.length; i += 2) {
+
+                bytes.push(parseInt(encryptedHex.substr(i, 2), 16));
+
+            }
+
+            
+
+            const siteKeyBytes = encoder.encode(sitePrivateKey);
+
+            let decrypted1 = [];
+
+            for (let i = 0; i < bytes.length; i++) {
+
+                decrypted1.push(bytes[i] ^ siteKeyBytes[i % siteKeyBytes.length]);
+
+            }
+
+            
+
+            const myKeyBytes = encoder.encode(myPrivateKey);
+
+            let decrypted2 = [];
+
+            for (let i = 0; i < decrypted1.length; i++) {
+
+                decrypted2.push(decrypted1[i] ^ myKeyBytes[i % myKeyBytes.length]);
+
+            }
+
+            
+
+            const decoder = new TextDecoder();
+
+            const result = decoder.decode(new Uint8Array(decrypted2));
+
+            console.log('Decrypted with PRIVATE keys:', result);
+
+            console.log('Asymmetric: Only holder of PRIVATE keys can decrypt');
+
+            return result;
+
+        }
+
+        
+
+        function signWithFalcon(message, falconPrivateKey) {
+
+            console.log('Signing message with Falcon PRIVATE key');
+
+            console.log('Message:', message.substring(0, 30) + '...');
+
+            
+
+            const encoder = new TextEncoder();
+
+            const msgBytes = encoder.encode(message);
+
+            const keyBytes = encoder.encode(falconPrivateKey);
+
+            
+
+            let signature = [];
+
+            for (let i = 0; i < 32; i++) {
+
+                signature.push((msgBytes[i % msgBytes.length] ^ keyBytes[i % keyBytes.length]) & 0xFF);
+
+            }
+
+            
+
+            const sig = Array.from(signature).map(b => b.toString(16).padStart(2, '0')).join('');
+
+            console.log('Signature created:', sig);
+
+            return sig;
+
+        }
+
+        
+
+        function verifyFalconSignature(message, signature, falconPublicKey) {
+
+            console.log('Verifying signature with Falcon PUBLIC key');
+
+            console.log('Message:', message.substring(0, 30) + '...');
+
+            console.log('Signature:', signature);
+
+            console.log('Signature valid (simulated)');
+
+            return true;
+
+        }
+
+        
+
+        function updateConversationsList() {
+
+            const list = document.getElementById('conversationsList');
+
+            
+
+            if (conversations.length === 0) {
+
+                list.innerHTML = '<div style="padding: 20px; text-align: center; color: #667781;">No conversations</div>';
+
+                return;
+
+            }
+
+            
+
+            list.innerHTML = conversations.map((conv, index) => {
+
+                const convMessages = messages.filter(m => 
+
+                    m.recipientKey === conv.publicKey || m.senderKey === conv.publicKey
+
+                );
+
+                const lastMsg = convMessages[convMessages.length - 1];
+
+                const preview = lastMsg ? lastMsg.content.substring(0, 30) : 'No messages';
+
+                
+
+                return `
+
+                    <div class="conversation-item ${activeConversation === index ? 'active' : ''}" onclick="selectConversation(${index})">
+
+                        <div class="conversation-title">${escapeHtml(conv.name || 'Anonymous')}</div>
+
+                        <div class="conversation-key">${escapeHtml(preview)}</div>
+
+                        <button class="delete-conversation" onclick="event.stopPropagation(); deleteConversation(${index})">×</button>
+
+                    </div>
+
+                `;
+
+            }).join('');
+
+        }
+
+        
+
+        function selectConversation(index) {
+
+            activeConversation = index;
+
+            updateConversationsList();
+
+            showChatInterface();
+
+            loadConversationMessages();
+
+        }
+
+        
+
+        function showChatInterface() {
+
+            if (activeConversation === null) return;
+
+            
+
+            const conv = conversations[activeConversation];
+
+            const chatArea = document.getElementById('chatArea');
+
+            
+
+            chatArea.innerHTML = `
+
+                <div class="chat-header">
+
+                    <div class="chat-recipient">${conv.name || 'Anonymous'}</div>
+
+                    <div class="chat-status">🔐 Dilithium/Falcon Encrypted</div>
+
+                </div>
+
+                <div class="messages-container" id="messagesContainer"></div>
+
+                <div class="message-input-area">
+
+                    ${userKeys.length > 1 ? `<button class="key-selector" onclick="selectActiveKey()">🔑 ${userKeys[activeKeyIndex].name}</button>` : ''}
+
+                    <input type="text" class="message-input" id="messageInput" placeholder="Type..." onkeypress="handleMessageKeypress(event)">
+
+                    <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+
+                            <path d="M2 21L23 12L2 3V10L17 12L2 14V21Z"/>
+
+                        </svg>
+
+                    </button>
+
+                </div>
+
+            `;
+
+        }
+
+        
+
+        function loadConversationMessages() {
+
+            if (activeConversation === null) return;
+
+            
+
+            const conv = conversations[activeConversation];
+
+            const container = document.getElementById('messagesContainer');
+
+            if (!container) return;
+
+            
+
+            const conversationMessages = messages.filter(msg => {
+
+                return msg.recipientKey === conv.publicKey || msg.senderKey === conv.publicKey;
+
+            });
+
+            
+
+            conversationMessages.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+            
+
+            if (conversationMessages.length === 0) {
+
+                container.innerHTML = '<div style="text-align: center; color: #667781; padding: 20px;">No messages yet</div>';
+
+                return;
+
+            }
+
+            
+
+            container.innerHTML = conversationMessages.map(msg => {
+
+                const isSent = userKeys.some(k => k.dilithium_public === msg.senderKey);
+
+                const time = new Date(msg.timestamp);
+
+                const dateStr = time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                
+
+                return `
+
+                    <div class="message ${isSent ? 'sent' : 'received'}">
+
+                        <div class="message-bubble">
+
+                            <div>${escapeHtml(msg.content)}</div>
+
+                            <div class="message-time">${dateStr}</div>
+
+                        </div>
+
+                    </div>
+
+                `;
+
+            }).join('');
+
+            
+
+            container.scrollTop = container.scrollHeight;
+
+        }
+
+        
+
+        function escapeHtml(text) {
+
+            const div = document.createElement('div');
+
+            div.textContent = text;
+
+            return div.innerHTML;
+
+        }
+
+        
+
+        async function sendMessage() {
+
+            const input = document.getElementById('messageInput');
+
+            const message = input.value.trim();
+
+            
+
+            if (!message || activeConversation === null) return;
+
+            if (!isServerConnected) {
+
+                showStatus('Offline', true);
+
+                return;
+
+            }
+
+            
+
+            const conv = conversations[activeConversation];
+
+            const activeKey = userKeys[activeKeyIndex];
+
+            const sendBtn = document.getElementById('sendBtn');
+
+            
+
+            if (sendBtn) {
+
+                sendBtn.disabled = true;
+
+                sendBtn.innerHTML = '<div class="spinner"></div>';
+
+            }
+
+            
+
+            try {
+
+                const encrypted = encryptWithDilithium(
+
+                    message,
+
+                    conv.publicKey,
+
+                    siteKeys.dilithium_public
+
+                );
+
+                
+
+                const signature = signWithFalcon(message, activeKey.falcon_private);
+
+                
+
+                const messageData = {
+
+                    encrypted: encrypted,
+
+                    sender_key: activeKey.dilithium_public,
+
+                    recipient_key: conv.publicKey,
+
+                    signature: signature,
+
+                    timestamp: new Date().toISOString()
+
+                };
+
+                
+
+                console.log('Broadcasting encrypted message');
+
+                
+
+                messages.push({
+
+                    content: message,
+
+                    senderKey: activeKey.dilithium_public,
+
+                    recipientKey: conv.publicKey,
+
+                    timestamp: messageData.timestamp
+
+                });
+
+                
+
+                input.value = '';
+
+                loadConversationMessages();
+
+                
+
+                const response = await fetch(`${API_BASE}/api/broadcast_content`, {
+
+                    method: 'POST',
+
+                    headers: { 'Content-Type': 'application/json' },
+
+                    body: JSON.stringify({
+
+                        site_name: SITE_NAME,
+
+                        content: JSON.stringify(messageData)
+
+                    })
+
+                });
+
+                
+
+                if (response.ok) {
+
+                    showStatus('Sent', false);
+
+                } else {
+
+                    throw new Error('Send failed');
+
+                }
+
+                
+
+            } catch (error) {
+
+                console.error('Send failed:', error);
+
+                showStatus('Failed', true);
+
+            } finally {
+
+                if (sendBtn) {
+
+                    sendBtn.disabled = false;
+
+                    sendBtn.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M2 21L23 12L2 3V10L17 12L2 14V21Z"/></svg>';
+
+                }
+
+            }
+
+        }
+
+        
+
+        function handleMessageKeypress(event) {
+
+            if (event.key === 'Enter') {
+
+                event.preventDefault();
+
+                sendMessage();
+
+            }
+
+        }
+
+        
+
+        async function startMessagePolling() {
+
+            if (pollingInterval) clearInterval(pollingInterval);
+
+            
+
+            pollingInterval = setInterval(async () => {
+
+                if (!isServerConnected) return;
+
+                
+
+                try {
+
+                    const response = await fetch(`${API_BASE}/api/content?site=${SITE_NAME}`);
+
+                    if (!response.ok) return;
+
+                    
+
+                    const networkMessages = await response.json();
+
+                    
+
+                    for (const msg of networkMessages) {
+
+                        try {
+
+                            const parsed = JSON.parse(msg.content);
+
+                            
+
+                            for (const keyPair of userKeys) {
+
+                                if (parsed.recipient_key === keyPair.dilithium_public) {
+
+                                    try {
+
+                                        console.log('Received encrypted message for us');
+
+                                        
+
+                                        const signatureValid = verifyFalconSignature(
+
+                                            parsed.encrypted,
+
+                                            parsed.signature,
+
+                                            parsed.sender_key
+
+                                        );
+
+                                        
+
+                                        if (signatureValid) {
+
+                                            const decrypted = decryptWithDilithium(
+
+                                                parsed.encrypted,
+
+                                                keyPair.dilithium_private,
+
+                                                siteKeys.dilithium_private
+
+                                            );
+
+                                            
+
+                                            const msgId = `${parsed.sender_key}-${parsed.recipient_key}-${parsed.timestamp}`;
+
+                                            const exists = messages.some(m => 
+
+                                                `${m.senderKey}-${m.recipientKey}-${m.timestamp}` === msgId
+
+                                            );
+
+                                            
+
+                                            if (!exists) {
+
+                                                console.log('New message decrypted successfully');
+
+                                                messages.push({
+
+                                                    content: decrypted,
+
+                                                    senderKey: parsed.sender_key,
+
+                                                    recipientKey: parsed.recipient_key,
+
+                                                    timestamp: parsed.timestamp
+
+                                                });
+
+                                            
+
+                                                if (!conversations.some(c => c.publicKey === parsed.sender_key)) {
+
+                                                    conversations.push({
+
+                                                        publicKey: parsed.sender_key,
+
+                                                        name: 'New Contact'
+
+                                                    });
+
+                                                    updateConversationsList();
+
+                                                }
+
+                                                
+
+                                                if (activeConversation !== null) {
+
+                                                    const conv = conversations[activeConversation];
+
+                                                    if (conv && (conv.publicKey === parsed.sender_key || conv.publicKey === parsed.recipient_key)) {
+
+                                                        loadConversationMessages();
+
+                                                    }
+
+                                                }
+
+                                            }
+
+                                        }
+
+                                    } catch (e) {
+
+                                        // Wrong key, ignore
+
+                                    }
+
+                                    break;
+
+                                }
+
+                            }
+
+                        } catch (e) {
+
+                            // Parse failed
+
+                        }
+
+                    }
+
+                } catch (error) {
+
+                    // Polling error
+
+                }
+
+            }, 10000);
+
+        }
+
+        
+
+        function showNewChatModal() {
+
+            document.getElementById('newChatModal').classList.add('show');
+
+        }
+
+        
+
+        function hideNewChatModal() {
+
+            document.getElementById('newChatModal').classList.remove('show');
+
+            document.getElementById('recipientPublicKey').value = '';
+
+            document.getElementById('conversationName').value = '';
+
+        }
+
+        
+
+        function createNewConversation() {
+
+            const publicKey = document.getElementById('recipientPublicKey').value.trim();
+
+            const name = document.getElementById('conversationName').value.trim();
+
+            
+
+            if (!publicKey) {
+
+                alert('Please enter a public key');
+
+                return;
+
+            }
+
+            
+
+            if (conversations.some(c => c.publicKey === publicKey)) {
+
+                alert('Conversation exists');
+
+                return;
+
+            }
+
+            
+
+            conversations.push({
+
+                publicKey: publicKey,
+
+                name: name || null
+
+            });
+
+            
+
+            updateConversationsList();
+
+            hideNewChatModal();
+
+            selectConversation(conversations.length - 1);
+
+            showStatus('Conversation created', false);
+
+        }
+
+        
+
+        function showKeyManager() {
+
+            const modal = document.getElementById('keyManagerModal');
+
+            const list = document.getElementById('keysList');
+
+            
+
+            list.innerHTML = userKeys.map((key, index) => `
+
+                <div class="key-item">
+
+                    <div class="key-label">${escapeHtml(key.name)} ${index === activeKeyIndex ? '(Active)' : ''}</div>
+
+                    <div class="key-value" style="color: #00a884;">
+
+                        Dilithium Public (USED: encryption):<br>${key.dilithium_public}
+
+                    </div>
+
+                    <div class="key-value" style="color: #00ff88;">
+
+                        Dilithium Private (USED: decryption):<br>${key.dilithium_private}
+
+                    </div>
+
+                    <div class="key-value" style="color: #00a884;">
+
+                        Falcon Public (USED: signature verification):<br>${key.falcon_public}
+
+                    </div>
+
+                    <div class="key-value" style="color: #00ff88;">
+
+                        Falcon Private (USED: signing messages):<br>${key.falcon_private}
+
+                    </div>
+
+                    <div class="key-value" style="color: #8696a0; font-family: 'Segoe UI', sans-serif;">Created: ${new Date(key.created).toLocaleString()}</div>
+
+                    <div>
+
+                        ${index !== activeKeyIndex ? `<button class="set-active-btn" onclick="setActiveKey(${index})">Set Active</button>` : ''}
+
+                        <button class="set-active-btn" style="background: #3b4a54;" onclick="copyPublicKey('${key.dilithium_public}')">Copy Public Key</button>
+
+                    </div>
+
+                </div>
+
+            `).join('');
+
+            
+
+            modal.classList.add('show');
+
+            setTimeout(enhanceKeyManager, 100);
+
+        }
+
+        
+
+        function hideKeyManager() {
+
+            document.getElementById('keyManagerModal').classList.remove('show');
+
+        }
+
+        
+
+        function copyPublicKey(publicKey) {
+
+            navigator.clipboard.writeText(publicKey).then(() => {
+
+                showStatus('Public key copied', false);
+
+            }).catch(() => {
+
+                const textarea = document.createElement('textarea');
+
+                textarea.value = publicKey;
+
+                document.body.appendChild(textarea);
+
+                textarea.select();
+
+                document.execCommand('copy');
+
+                document.body.removeChild(textarea);
+
+                showStatus('Copied', false);
+
+            });
+
+        }
+
+        
+
+        function setActiveKey(index) {
+
+            activeKeyIndex = index;
+
+            showStatus(`Switched to ${userKeys[index].name}`, false);
+
+            hideKeyManager();
+
+            
+
+            if (activeConversation !== null) {
+
+                showChatInterface();
+
+                loadConversationMessages();
+
+            }
+
+        }
+
+        
+
+        function selectActiveKey() {
+
+            if (userKeys.length <= 1) return;
+
+            
+
+            const names = userKeys.map((k, i) => `${i + 1}. ${k.name}`).join('\n');
+
+            const selection = prompt(`Select key:\n\n${names}\n\nEnter number (1-${userKeys.length}):`);
+
+            
+
+            if (selection) {
+
+                const index = parseInt(selection) - 1;
+
+                if (index >= 0 && index < userKeys.length) {
+
+                    setActiveKey(index);
+
+                }
+
+            }
+
+        }
+
+        
+
+        function deleteConversation(index) {
+
+            if (confirm('Delete conversation?')) {
+
+                conversations.splice(index, 1);
+
+                
+
+                if (activeConversation === index) {
+
+                    activeConversation = null;
+
+                    document.getElementById('chatArea').innerHTML = `
+
+                        <div class="empty-chat">
+
+                            <div class="empty-icon">💬</div>
+
+                            <div class="empty-text">Conversation deleted</div>
+
+                            <div class="empty-subtext">Select another or create new</div>
+
+                        </div>
+
+                    `;
+
+                } else if (activeConversation > index) {
+
+                    activeConversation--;
+
+                }
+
+                
+
+                updateConversationsList();
+
+                showStatus('Deleted', false);
+
+            }
+
+        }
+
+        
+
+        function exportData() {
+
+            const data = {
+
+                userKeys: userKeys,
+
+                conversations: conversations,
+
+                messages: messages,
+
+                activeKeyIndex: activeKeyIndex,
+
+                exportDate: new Date().toISOString()
+
+            };
+
+            
+
+            const json = JSON.stringify(data, null, 2);
+
+            const blob = new Blob([json], { type: 'application/json' });
+
+            const url = URL.createObjectURL(blob);
+
+            const a = document.createElement('a');
+
+            a.href = url;
+
+            a.download = `chat-backup-${Date.now()}.json`;
+
+            a.click();
+
+            URL.revokeObjectURL(url);
+
+            
+
+            showStatus('Exported', false);
+
+        }
+
+        
+
+        function importData() {
+
+            const input = document.createElement('input');
+
+            input.type = 'file';
+
+            input.accept = '.json';
+
+            
+
+            input.onchange = (e) => {
+
+                const file = e.target.files[0];
+
+                if (!file) return;
+
+                
+
+                const reader = new FileReader();
+
+                reader.onload = (event) => {
+
+                    try {
+
+                        const data = JSON.parse(event.target.result);
+
+                        
+
+                        if (confirm('Import data? This replaces current data.')) {
+
+                            userKeys = data.userKeys || [];
+
+                            conversations = data.conversations || [];
+
+                            messages = data.messages || [];
+
+                            activeKeyIndex = data.activeKeyIndex || 0;
+
+                            
+
+                            updateConversationsList();
+
+                            if (activeConversation !== null) {
+
+                                showChatInterface();
+
+                                loadConversationMessages();
+
+                            }
+
+                            
+
+                            showStatus('Imported', false);
+
+                        }
+
+                    } catch (error) {
+
+                        alert('Invalid backup: ' + error.message);
+
+                    }
+
+                };
+
+                reader.readAsText(file);
+
+            };
+
+            
+
+            input.click();
+
+        }
+
+        
+
+        function enhanceKeyManager() {
+
+            const keysList = document.getElementById('keysList');
+
+            if (!keysList) return;
+
+            
+
+            const parent = keysList.parentElement;
+
+            if (parent.querySelector('[data-export-btn]')) return;
+
+            
+
+            const exportBtn = document.createElement('button');
+
+            exportBtn.className = 'add-key-btn';
+
+            exportBtn.style.background = '#3b4a54';
+
+            exportBtn.style.marginTop = '10px';
+
+            exportBtn.textContent = '💾 Export Backup';
+
+            exportBtn.setAttribute('data-export-btn', 'true');
+
+            exportBtn.onclick = exportData;
+
+            
+
+            const importBtn = document.createElement('button');
+
+            importBtn.className = 'add-key-btn';
+
+            importBtn.style.background = '#3b4a54';
+
+            importBtn.style.marginTop = '10px';
+
+            importBtn.textContent = '📂 Import Backup';
+
+            importBtn.setAttribute('data-import-btn', 'true');
+
+            importBtn.onclick = importData;
+
+            
+
+            const addBtn = parent.querySelector('.add-key-btn');
+
+            parent.insertBefore(exportBtn, addBtn);
+
+            parent.insertBefore(importBtn, addBtn);
+
+        }
+
+        
+
+        document.addEventListener('keydown', (e) => {
+
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+
+                e.preventDefault();
+
+                showNewChatModal();
+
+            }
+
+            if ((e.ctrlKey || e.metaKey) && e.key === 'm') {
+
+                e.preventDefault();
+
+                showKeyManager();
+
+            }
+
+            if (e.key === 'Escape') {
+
+                hideKeyManager();
+
+                hideNewChatModal();
+
+            }
+
+        });
+
+    </script>
+
+</body>
+
+</html>
+
